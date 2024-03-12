@@ -184,7 +184,7 @@ def get_closest_scale(x,y):
     closest = pairs[0]
 
     for scale in scales:
-        if scale.x == int(closest[0]) and scale.y == int(closest[1]):
+        if scale.x == int(closest[0][0]) and scale.y == int(closest[0][1]):
             return scale
     return None
 
