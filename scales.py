@@ -75,6 +75,7 @@ def click_handler():
             dpg.configure_item(f"scale_{closest.x}_{closest.y}",texture_tag=f"texture_{selected_color}")
     except:
         print(f"Couldn't find scale_{closest.x}_{closest.y}")
+    update_color_counts()
 
     while dpg.is_mouse_button_down(button=dpg.mvMouseButton_Left):
         new_x,new_y = dpg.get_mouse_pos()
@@ -85,6 +86,7 @@ def click_handler():
                     closest.color_id = selected_color
                     closest.texture = f"texture_{selected_color}"
                     dpg.configure_item(f"scale_{closest.x}_{closest.y}",texture_tag=f"texture_{selected_color}")
+                    update_color_counts()
             except:
                 print(f"Couldn't find scale_{closest.x}_{closest.y}")
     save_state()
@@ -146,6 +148,7 @@ def create_scale_matrix(save_after):
         y_top_off = y
     if save_after:
         save_state()
+    update_color_counts()
 
 def get_closest_scale(x,y):
     x1_n = round((x-x_off)/scale_x_spacing)
@@ -195,12 +198,12 @@ def add_color_group(invisible=False,default_color=[255.0,255.0,255.0,255.0]):
     saved_color_groups.append(group_id)
     if invisible:
         color_icon = dpg.add_color_button(parent=group_id,default_value=[0,0,0,0],enabled=False)
-        color_text = dpg.add_selectable(label=f"Invisible",parent=group_id)       
+        color_text = dpg.add_selectable(label=f"Invisible (0)",parent=group_id)       
         make_new_texture(f"texture_{len(saved_colors)}",[0,0,0,0])
         saved_colors.append([0,0,0,0])
     else:
         color_icon = dpg.add_color_edit(parent=group_id, no_inputs=True, no_alpha=True,callback=color_picked,default_value=default_color)
-        color_text = dpg.add_selectable(label=f"Color {len(saved_colors)}",parent=group_id)
+        color_text = dpg.add_selectable(tag=f"color_text_{len(saved_colors)}",label=f"Color {len(saved_colors)} (0)",parent=group_id)
         make_new_texture(f"texture_{len(saved_colors)}",default_color)
         saved_colors.append(default_color)
     saved_color_icons.append(color_icon)
@@ -208,6 +211,17 @@ def add_color_group(invisible=False,default_color=[255.0,255.0,255.0,255.0]):
     dpg.configure_item(color_text,callback=_selection, user_data=saved_color_texts)
     if not invisible:
         _selection(color_text)
+
+def update_color_counts():
+    counts = [0 for color in saved_colors]
+    for scale in scales:
+        counts[scale.color_id] = counts[scale.color_id]+1
+
+    index = 0
+    for count in counts:
+        lbl = f"Invisible ({count})" if index == 0 else f"Color {index} ({count})"
+        dpg.configure_item(saved_color_texts[index],label=lbl)
+        index += 1
 
 def condense_layout(layout):
     if len(layout) < 3:
@@ -319,6 +333,7 @@ def import_code(from_undo, raw_code):
             _selection(saved_color_texts[previous_color])
     else:
         save_state()
+    update_color_counts()
 
 def number_keybind(num):
     if num < len(saved_color_texts):
