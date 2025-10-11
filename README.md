@@ -7,6 +7,7 @@ Includes the following features:
 * Custom Scale Pattern Size
 * Fully Custom Scale Colors 
 * Dynamically Change Scales' Colors
+* Dual-Axis Symmetry
 * Undo / Ctrl-Z
 * Hotswap between your last two selected colors with 'Space'
 * Hotswap between your first 9 colors with number keys and Invisible with 0 or `
@@ -17,7 +18,11 @@ Includes the following features:
 ### Example Import/Export Code
 
 ```
+Old Format:
 [20,45][0036e5,959595,1a1a1a][3-1,3,2-2,2-1,3,2-2,3,2-1,2-2,3,6-1,2-3,2,2-1,3,2,3,2-1,2,2-3,3-1,0,2,3-1,3,2-2,2-1,2-3,2-1,2-2,3,3-1,2-2,3-1,2-3,2,2-1,3,2-1,2,2-3,3-1,2,0,3,4-1,3,2-2,4-1,2-2,3,4-1,3,2,4-1,2-3,2,3-1,2,2-3,4-1,2,0,3,5-1,3,2-2,2-1,2-2,3,5-1,3,2,3-1,3,1,2-3,2,1,2,2-3,1,3,3-1,2,0,3,2,2-1,2,2-1,3,4-2,3,2-1,2,2-1,2,2-3,2-1,2-3,2-1,2-3,2,2-3,2-1,2-3,2-1,3,0,3,2,1,2,3,3-1,3,2-2,3,3-1,3,2,1,2,2-3,1,2-3,4-1,3-3,4-1,2-3,1,3,0,3,2,1,3,5-1,2-3,5-1,3,1,2,2-3,1,3,6-1,3,6-1,3,1,3,0,3,2,5-1,3,4-1,3,5-1,2,2-3,2,4-1,2,5-1,2,4-1,2,3,0,2-3,4-1,2-3,4-1,2-3,4-1,3-3,2,3-1,2,3,2-1,3,2-1,3,2,3-1,2,3,0,2-3,3-1,2-3,6-1,2-3,3-1,3-3,2,2-1,2,3,7-1,3,2,2-1,2,3,0,2-3,3-1,3,8-1,3,3-1,3-3,2,2-1,2,3,3-1,3,3-1,3,2,2-1,2,3,0,2-3,2-1,2-3,8-1,2-3,2-1,3-3,2,1,2,3,9-1,3,2,1,2,3,0,2-3,1,2-3,10-1,2-3,1,3-3,2,1,3,3-1,3,1,3,1,3,3-1,3,1,2,3,0,2-3,1,3,3-1,2,4-1,2,3-1,3,1,3-3,2,4-1,2-3,3-1,2-3,4-1,2,3,0,2-3,4-1,2,3,4-1,3,2,4-1,3-3,2,3-1,2-3,2-1,3,2-1,2-3,3-1,2,3,0,3,2,3-1,2,3,6-1,3,2,3-1,2,2-3,4-1,3,7-1,3,4-1,3,0,3,2,3-1,2,3,6-1,3,2,3-1,2,2-3,3-1,2-3,3-1,3,3-1,2-3,3-1,3,0,3,2,2-1,2,3,8-1,3,2,2-1,2,2-3,2-1,2-3,9-1,2-3,2-1,3,0,3,2,1,2,3,10-1,3,2,1,2,3,2,1,2-3,5-1,3,5-1,2-3,1,2,0,3,2-1,3,5-1,2-2,5-1,3,2-1,3,2,1,3,4-1,5-3,4-1,3,1,2,0,3,6-1,2-2,2-3,2-2,6-1,3,2,5-1,3-3,0,3-3,5-1,2,0,2,5-1,2,2-3,2-0,2-3,2,5-1,2,5-1,2-3,5-0,2-3,5-1,0,5-1,2-3,6-0,2-3,5-1]
+
+New Format:
+(8dO6AhQtBgA25ZWVlRoaGlRsVJsTUsTWuSUmRqScqgJUbFS5UsTVMVTklJqScqiA1ZsVbE1ZkrckqJyrIDWGxUsTWGSoxckJORNUQGSklJszUkpJypcqXJOVLlSYGQkao2JqjISci5VulbkTAyE1jlYYk5E1prTEwMlhqzWE5JWSwlZGDlW5VuVbolRGpNSZKiMHKpytcqnRKSNcZKSMHKo15qnRKSNUaoyUkYOVLle5UuiEjkgyEjByLmSXIuiE1RiYmqMSMHImqJWSoxdErcqnKsjByrI1ZkrdEqcqTUuVRGBkqI1pkqJyrNcaswMlRGtMlROVTlUapyqMDJSRrzJSTlS5khypMDISOSTISMhcrDWORIDUmsYrDUmQmreKzEgNaxcsVpksdA6WEBLCcoXJLCWOUjlYCxylcrA=)
 ```
 
 
