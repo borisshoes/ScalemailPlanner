@@ -224,7 +224,10 @@ def update_dynamic_texture(color, texture_id):
     use_alpha = (texture_id != "texture_0")
     for i in range(0, txt_width * txt_height):
         r0, g0, b0, a0 = txt_data[4*i+0], txt_data[4*i+1], txt_data[4*i+2], txt_data[4*i+3]
-        out.append(r0 * rgba[0]); out.append(g0 * rgba[1]); out.append(b0 * rgba[2]); out.append(a0 if use_alpha else 0)
+        out.append(r0 * rgba[0])
+        out.append(g0 * rgba[1])
+        out.append(b0 * rgba[2])
+        out.append(a0 if use_alpha else 0)
     dpg.set_value(texture_id, out)
     redraw_symmetry_lines()
 
@@ -240,7 +243,8 @@ def draw_cell(row, col, color_id, layer_id):
 # ---- grid lifecycle ----
 def create_scale_matrix(save_after):
     global rows, columns, grid, x_vals, y_vals
-    ensure_palette_textures(); normalize_grid_colors()
+    ensure_palette_textures()
+    normalize_grid_colors()
     columns, rows = map(int, dpg.get_value("input_size")[:2])
     _recompute_layout()
     dpg.delete_item(drawlist, children_only=True)
@@ -356,11 +360,15 @@ def _linear_to_srgb(c):
     return 0.0 if v<0.0 else 1.0 if v>1.0 else v
 
 def _srgb_u8_to_oklab(r, g, b):
-    r = _srgb_to_linear(r/255.0); g = _srgb_to_linear(g/255.0); b = _srgb_to_linear(b/255.0)
+    r = _srgb_to_linear(r/255.0)
+    g = _srgb_to_linear(g/255.0)
+    b = _srgb_to_linear(b/255.0)
     l = 0.4122214708*r + 0.5363325363*g + 0.0514459929*b
     m = 0.2119034982*r + 0.6806995451*g + 0.1073969566*b
     s = 0.0883024619*r + 0.2817188376*g + 0.6299787005*b
-    l_ = l**(1/3); m_ = m**(1/3); s_ = s**(1/3)
+    l_ = l**(1/3)
+    m_ = m**(1/3)
+    s_ = s**(1/3)
     L = 0.2104542553*l_ + 0.7936177850*m_ - 0.0040720468*s_
     a = 1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_
     b = 0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_
@@ -368,7 +376,9 @@ def _srgb_u8_to_oklab(r, g, b):
 
 # --- distance utility
 def _oklab_dist2(c1, c2):
-    dL = c1[0]-c2[0]; da = c1[1]-c2[1]; db = c1[2]-c2[2]
+    dL = c1[0]-c2[0]
+    da = c1[1]-c2[1]
+    db = c1[2]-c2[2]
     return dL*dL + da*da + db*db
 
 # --- main: find most distant color vs. current palette (returns RGBA)
@@ -407,9 +417,12 @@ def find_most_distant_oklab_color_rgba(palette_rgb_u8=None, alpha=255):
     for rad in levels:
         # build a small grid around current best; clamp to 0..255; stride = max(1, rad//2)
         stride = max(1, rad//2)
-        r0 = max(0, cr - rad); r1 = min(255, cr + rad)
-        g0 = max(0, cg - rad); g1 = min(255, cg + rad)
-        b0 = max(0, cb - rad); b1 = min(255, cb + rad)
+        r0 = max(0, cr - rad)
+        r1 = min(255, cr + rad)
+        g0 = max(0, cg - rad)
+        g1 = min(255, cg + rad)
+        b0 = max(0, cb - rad)
+        b1 = min(255, cb + rad)
         local_best = best_rgb
         local_best_d2 = best_min_d2
         r = r0
@@ -457,7 +470,8 @@ def _add_col_left():
     global columns, x_mirror_pos
     if rows <= 0: return
     for r in range(rows): grid[r].insert(0, 0)
-    columns += 1; _sync_size()
+    columns += 1
+    _sync_size()
     create_scale_matrix(True)
     x_mirror_pos += 2
     redraw_symmetry_lines()
@@ -466,7 +480,8 @@ def _add_col_right():
     global columns
     if rows <= 0: return
     for r in range(rows): grid[r].append(0)
-    columns += 1; _sync_size()
+    columns += 1
+    _sync_size()
     create_scale_matrix(True)
 
 def _crop_canvas():
@@ -476,14 +491,18 @@ def _crop_canvas():
     def col_empty(ci): return all(grid[r][ci] == 0 for r in range(len(grid)))
     # trim empty bottom rows
     while grid and row_empty(grid[0]):
-        grid.pop(0); base_row_parity ^= 1
+        grid.pop(0)
+        base_row_parity ^= 1
     # trim empty top rows
     while grid and row_empty(grid[-1]):
         grid.pop(-1)
         y_mirror_pos -= 1
     if not grid:
-        grid = [[0]]; rows, columns, base_row_parity = 1, 1, 0
-        _sync_size(); create_scale_matrix(True); return
+        grid = [[0]]
+        rows, columns, base_row_parity = 1, 1, 0
+        _sync_size()
+        create_scale_matrix(True)
+        return
     # trim empty left columns
     while grid and len(grid[0]) > 0 and col_empty(0):
         for r in range(len(grid)): 
@@ -496,7 +515,8 @@ def _crop_canvas():
     rows = len(grid)
     columns = len(grid[0]) if rows > 0 else 0
     if rows <= 0 or columns <= 0:
-        grid = [[0]]; rows, columns, base_row_parity = 1, 1, 0
+        grid = [[0]]
+        rows, columns, base_row_parity = 1, 1, 0
     _sync_size()
     create_scale_matrix(True)
 
@@ -566,39 +586,60 @@ def _toggle_coords():
 _MAGIC = 0xF1D3BA02
 
 class _BitWriter:
-    def __init__(self): self.buf=bytearray(); self.acc=0; self.bits=0
+    def __init__(self): 
+        self.buf=bytearray()
+        self.acc=0
+        self.bits=0
+        
     def write(self, value, width):
         v=int(value)&((1<<width)-1)
-        self.acc=(self.acc<<width)|v; self.bits+=width
+        self.acc=(self.acc<<width)|v
+        self.bits+=width
         while self.bits>=8:
             self.bits-=8
             self.buf.append((self.acc>>self.bits)&0xFF)
             self.acc&=(1<<self.bits)-1
+            
     def bytes(self):
-        if self.bits>0: self.buf.append((self.acc<<(8-self.bits))&0xFF); self.acc=0; self.bits=0
+        if self.bits>0: self.buf.append((self.acc<<(8-self.bits))&0xFF)
+        self.acc=0
+        self.bits=0
         return bytes(self.buf)
 
 class _BitReader:
-    def __init__(self, data): self.data=data; self.i=0; self.acc=0; self.bits=0
+    def __init__(self, data): 
+        self.data=data
+        self.i=0
+        self.acc=0
+        self.bits=0
+        
     def read(self, width):
         while self.bits<width:
             if self.i>=len(self.data): raise ValueError("Unexpected end of stream")
-            self.acc=(self.acc<<8)|self.data[self.i]; self.i+=1; self.bits+=8
+            self.acc=(self.acc<<8)|self.data[self.i]
+            self.i+=1
+            self.bits+=8
         self.bits-=width
         v=(self.acc>>self.bits)&((1<<width)-1)
         self.acc&=(1<<self.bits)-1
         return v
     
 def _encode_runs(flat, palette_rgb):
-    w=_BitWriter(); 
+    w=_BitWriter()
     #print("Starting bitwriter")
     color_len = len(palette_rgb)
     color_bits = color_len.bit_length() or 1
     #print(f"{color_len} colors, {color_bits} color bits")
-    w.write(_MAGIC,32); w.write(columns,8); w.write(rows,8); w.write(len(palette_rgb),7); w.write(base_row_parity,1)
+    w.write(_MAGIC,32)
+    w.write(columns,8)
+    w.write(rows,8)
+    w.write(len(palette_rgb),7)
+    w.write(base_row_parity,1)
     for r,g,b in palette_rgb:
-        w.write(r,8); w.write(g,8); w.write(b,8) 
-    n=len(flat); i=0
+        w.write(r,8); w.write(g,8)
+        w.write(b,8) 
+    n=len(flat)
+    i=0
     while i<n:
         cid=_clamp(int(flat[i]),0,255)
         run_len=1
@@ -636,17 +677,24 @@ def _decode_runs(raw:str):
     s=raw.strip().replace(")","").replace("(","")
     data=base64.b64decode(s)
     br=_BitReader(data)
-    magic=br.read(32); 
+    magic=br.read(32)
     if magic!=_MAGIC: raise ValueError("Bad magic")
-    columns=br.read(8); rows=br.read(8); color_count=br.read(7); bit=br.read(1)
+    columns=br.read(8)
+    rows=br.read(8)
+    color_count=br.read(7)
+    bit=br.read(1)
     color_bits = color_count.bit_length()
     palette=[]
     for _ in range(color_count):
-        r=br.read(8); g=br.read(8); b=br.read(8); palette.append([r,g,b,255])
+        r=br.read(8)
+        g=br.read(8)
+        b=br.read(8)
+        palette.append([r,g,b,255])
     total=rows*columns
-    out=[]; 
+    out=[]
     while len(out)<total:
-        tag=br.read(2); cid=br.read(color_bits)
+        tag=br.read(2)
+        cid=br.read(color_bits)
         if tag==0b00: length=1
         elif tag==0b01: length=br.read(3)+1
         elif tag==0b10: length=br.read(6)+1
@@ -661,7 +709,9 @@ def import_code_button(): import_code(False, dpg.get_value("code_box"))
 
 def condense_layout(flat):
     if not flat: return flat
-    out = []; run_val = flat[0]; run_len = 1
+    out = []
+    run_val = flat[0]
+    run_len = 1
     for v in flat[1:]:
         if v == run_val: run_len += 1
         else:
@@ -693,6 +743,7 @@ def import_code(from_undo, raw_code):
     global saved_colors, saved_color_texts, saved_color_groups, saved_color_icons, selected_color, base_row_parity
     if not raw_code: return
     s=str(raw_code).strip()
+    return_color = None if not from_undo else selected_color
     try:
         if _is_old_text_code(s):
             # --- OLD FORMAT ---
@@ -729,7 +780,6 @@ def import_code(from_undo, raw_code):
             try:
                 new_code=generate_code(False); dpg.set_value("code_box", new_code)
             except Exception: pass
-            return
         else:
             # --- NEW FORMAT (base64) ---
             cols, rws, palette_rgb, flat, bit = _decode_runs(s)
@@ -750,12 +800,13 @@ def import_code(from_undo, raw_code):
             for i in range(min(total, len(flat))):
                 r=i//columns; c=i%columns; grid[r][c]=_clamp(flat[i],0,len(saved_colors)-1)
             create_scale_matrix(False); save_state(); update_color_counts()
-            return
+        if return_color is not None and selected_color < len(saved_colors):
+            _selection(saved_color_texts[return_color])
     except Exception as e:
         print(f"Import failed: {e}")
 
 # ---- hotkeys / history ----
-def number_keybind(num):
+def number_keybind(num, *unused):
     if num is None: return
     if 0 <= num < len(saved_color_texts): _selection(saved_color_texts[num])
 
@@ -781,9 +832,11 @@ with dpg.theme() as canvas_theme, dpg.theme_component():
 
 with dpg.window() as window:
     with dpg.handler_registry():
-        for i, key in enumerate([dpg.mvKey_0, dpg.mvKey_1, dpg.mvKey_2, dpg.mvKey_3, dpg.mvKey_4, dpg.mvKey_5, dpg.mvKey_6, dpg.mvKey_7, dpg.mvKey_8, dpg.mvKey_9]): dpg.add_key_press_handler(key, callback=lambda s, a, u, i=i: number_keybind(i))
-        for i, key in enumerate([dpg.mvKey_NumPad0, dpg.mvKey_NumPad1, dpg.mvKey_NumPad2, dpg.mvKey_NumPad3, dpg.mvKey_NumPad4, dpg.mvKey_NumPad5, dpg.mvKey_NumPad6, dpg.mvKey_NumPad7, dpg.mvKey_NumPad8, dpg.mvKey_NumPad9]): dpg.add_key_press_handler(key, callback=lambda s, a, u, i=i: number_keybind(i))
-        dpg.add_key_press_handler(dpg.mvKey_Tilde, callback=lambda: number_keybind(0)); dpg.add_key_press_handler(dpg.mvKey_Spacebar, callback=switch_color); dpg.add_key_press_handler(dpg.mvKey_Z, callback=undo)
+        for i, key in enumerate([dpg.mvKey_0, dpg.mvKey_1, dpg.mvKey_2, dpg.mvKey_3, dpg.mvKey_4, dpg.mvKey_5, dpg.mvKey_6, dpg.mvKey_7, dpg.mvKey_8, dpg.mvKey_9]): dpg.add_key_press_handler(key, callback=(lambda *_, i=i: number_keybind(i)))
+        for i, key in enumerate([dpg.mvKey_NumPad0, dpg.mvKey_NumPad1, dpg.mvKey_NumPad2, dpg.mvKey_NumPad3, dpg.mvKey_NumPad4, dpg.mvKey_NumPad5, dpg.mvKey_NumPad6, dpg.mvKey_NumPad7, dpg.mvKey_NumPad8, dpg.mvKey_NumPad9]): dpg.add_key_press_handler(key, callback=(lambda *_, i=i: number_keybind(i)))
+        dpg.add_key_press_handler(dpg.mvKey_Tilde, callback=lambda: number_keybind(0))
+        dpg.add_key_press_handler(dpg.mvKey_Spacebar, callback=switch_color)
+        dpg.add_key_press_handler(dpg.mvKey_Z, callback=undo)
 
     with dpg.group(horizontal=True):
         with dpg.child_window(width=canvas_x, height=canvas_y) as canvas:
@@ -802,20 +855,24 @@ with dpg.window() as window:
                     prev_selected_color = selected_color
                     selected_color = saved_color_texts.index(sender)
                     for item in saved_color_texts: dpg.set_value(item, item == sender)
-                add_color_group(True); add_color_group()
+                add_color_group(True)
+                add_color_group()
             dpg.add_text("    Width | Height")
             dpg.add_input_intx(tag="input_size", width=color_bar_width, default_value=[15, 20], size=2, min_value=1, min_clamped=True)
             dpg.add_button(label="Make Scale Grid", width=color_bar_width, callback=make_new_grid)
-            dpg.add_text(""); dpg.add_button(label="Export", width=color_bar_width, callback=lambda: generate_code(True))
+            dpg.add_text("")
+            dpg.add_button(label="Export", width=color_bar_width, callback=lambda: generate_code(True))
             dpg.add_input_text(tag="code_box", width=color_bar_width, hint="Code") 
             dpg.add_button(label="Import", width=color_bar_width, callback=import_code_button)
-            dpg.add_text(""); dpg.add_text("    Canvas Resize")
+            dpg.add_text("")
+            dpg.add_text("    Canvas Resize")
             dpg.add_button(label="Add Top Row", width=color_bar_width, callback=_add_row_top)
             dpg.add_button(label="Add Bottom Row", width=color_bar_width, callback=_add_row_bottom)
             dpg.add_button(label="Add Left Column", width=color_bar_width, callback=_add_col_left)
             dpg.add_button(label="Add Right Column", width=color_bar_width, callback=_add_col_right)
             dpg.add_button(label="Crop Canvas", width=color_bar_width, callback=_crop_canvas)
-            dpg.add_text(""); dpg.add_text("       Symmetry")
+            dpg.add_text("")
+            dpg.add_text("       Symmetry")
             _create_sym_themes()
             slider_w = max(0, color_bar_width - SYM_BTN_SIZE - 6)
             # X row
@@ -829,7 +886,8 @@ with dpg.window() as window:
             # initial visuals
             _sync_sym_btn_visual("x_toggle_btn", x_mirror_enabled)
             _sync_sym_btn_visual("y_toggle_btn", y_mirror_enabled)
-            dpg.add_text(""); dpg.add_button(label="Toggle Coords", width=color_bar_width, callback=_toggle_coords)
+            dpg.add_text("")
+            dpg.add_button(label="Toggle Coords", width=color_bar_width, callback=_toggle_coords)
 
 dpg.set_primary_window(window, True)
 dpg.create_viewport(width=window_width, height=window_height, title="Boris's Scalemail Planner")
