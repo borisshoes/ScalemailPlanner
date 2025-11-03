@@ -31,9 +31,20 @@ New Format:
 ![App Screenshot](https://i.imgur.com/0Em1yCs.png)
 
 ## Installation
-The GUI is a single-file python script. You can clone the repo or download scales.py and scale.png to a directory of your choice.
+The GUI is a single-file python script. You can clone the repo or download the zip file in the [Releases](https://github.com/borisshoes/ScalemailPlanner/releases) page to a directory of your choice.
 
-You will need to pip install DearPyGui, Numpy, and Pyperclip to run the GUI
+Installation Steps:
+1) Download and install Python from [https://www.python.org/downloads/](https://www.python.org/downloads/)
+2) Download the ZIP file from the [Releases](https://github.com/borisshoes/ScalemailPlanner/releases) page and unzip the folder.
+3) Either run installer.bat if you are on windows, or use the following two commands on mac with a terminal in the folder
+
+```python -m pip install --upgrade --user pip```
+
+```python -m pip install -r requirements.txt --user```
+
+4) The installer will open the window on success, or you can then just use run.bat. For mac use the command
+
+```python ./scales.py```
 
 ## Usage
 
