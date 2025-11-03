@@ -1,10 +1,20 @@
-import numpy as np
 import dearpygui.dearpygui as dpg
-import pyperclip, math, base64
+import pyperclip, base64, sys, os
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    """https://stackoverflow.com/questions/31836104/pyinstaller-and-onefile-how-to-include-an-image-in-the-exe-file"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # ---- DPG context & source texture ----
 dpg.create_context()
-txt_width, txt_height, txt_channels, txt_data = dpg.load_image("scale.png")
+txt_width, txt_height, txt_channels, txt_data = dpg.load_image(resource_path("scale.png"))
 
 # ---- App state ----
 grid = []
@@ -890,7 +900,7 @@ with dpg.window() as window:
             dpg.add_button(label="Toggle Coords", width=color_bar_width, callback=_toggle_coords)
 
 dpg.set_primary_window(window, True)
-dpg.create_viewport(width=window_width, height=window_height, title="Boris's Scalemail Planner")
+dpg.create_viewport(width=window_width, height=window_height, title="Boris's Scalemail Planner", small_icon=resource_path("icon_small.png"), large_icon=resource_path("icon_big.png"))
 dpg.setup_dearpygui()
 dpg.show_viewport()
 dpg.start_dearpygui()

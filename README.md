@@ -33,6 +33,8 @@ New Format:
 ## Installation
 The GUI is a single-file python script. You can clone the repo or download the zip file in the [Releases](https://github.com/borisshoes/ScalemailPlanner/releases) page to a directory of your choice.
 
+**Alternatively, you can download the pre-compiled EXE file and run that.**
+
 Installation Steps:
 1) Download and install Python from [https://www.python.org/downloads/](https://www.python.org/downloads/)
 2) Download the ZIP file from the [Releases](https://github.com/borisshoes/ScalemailPlanner/releases) page and unzip the folder.
@@ -47,7 +49,10 @@ Installation Steps:
 ```python ./scales.py```
 
 ## Usage
+### Option A
+Run the EXE file available in [Releases](https://github.com/borisshoes/ScalemailPlanner/releases)
 
+### Option B
 1) Run the python script with scale.png in the same directory (you can use a custom scale image or the included one)
 2) Enter the size of your pattern in the width and height boxes (measured in scales)
 3) Click Make Scale Grid

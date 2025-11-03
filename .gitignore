@@ -1,0 +1,7 @@
+# Directories
+__pycache__/
+build/
+dist/
+
+build.bat
+Boris Scalemail Planner.spec
