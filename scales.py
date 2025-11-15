@@ -275,6 +275,7 @@ def create_scale_matrix(save_after):
             for c in range(columns): draw_cell(r, c, grid[r][c], layer_id)
 
     if save_after: save_state()
+    else: update_matrix_dimensions()  # Update dimensions even if not saving state
     update_color_counts()
 
     try:
@@ -289,7 +290,7 @@ def make_new_grid():
     grid = [[selected_color for _ in range(columns)] for _ in range(rows)]
     base_row_parity = 0
     create_scale_matrix(True)
-    save_state()
+    # save_state() is called by create_scale_matrix(True), which updates dimensions
 
 def _ensure_symmetry_layer():
     if not dpg.does_item_exist("symmetry_lines"):
@@ -786,6 +787,7 @@ def import_code(from_undo, raw_code):
                     if idx>=rows*columns: break
                     r=idx//columns; c=idx%columns; grid[r][c]=cid; idx+=1
             create_scale_matrix(False); save_state(); update_color_counts()
+            # save_state() updates dimensions
             # convert to new schema and show it
             try:
                 new_code=generate_code(False); dpg.set_value("code_box", new_code)
@@ -810,6 +812,7 @@ def import_code(from_undo, raw_code):
             for i in range(min(total, len(flat))):
                 r=i//columns; c=i%columns; grid[r][c]=_clamp(flat[i],0,len(saved_colors)-1)
             create_scale_matrix(False); save_state(); update_color_counts()
+            # save_state() updates dimensions
         if return_color is not None and selected_color < len(saved_colors):
             _selection(saved_color_texts[return_color])
     except Exception as e:
@@ -835,6 +838,116 @@ def save_state():
     global previous_states
     code = generate_code(False)
     if not previous_states or previous_states[-1] != code: previous_states.append(code)
+    update_matrix_dimensions()
+
+# ---- scale size calculations ----
+def get_scale_dimensions():
+    """Get the per-scale overlapping dimensions in mm (returns width, height)"""
+    scale_size = dpg.get_value("scale_size_combo")
+    # Per-scale dimensions when overlapping: [XL, L, M, S, XS]
+    # Height: [14.5, 10.8, 8.4, 6.7, 3.6]
+    # Width: [33.9, 24.7, 19.8, 15.9, 8.4]
+    if "XL" in scale_size:
+        return 33.9, 14.5
+    elif "XS" in scale_size:  # Check XS before S to avoid confusion
+        return 8.4, 3.6
+    elif "L" in scale_size:
+        return 24.7, 10.8
+    elif "M" in scale_size:
+        return 19.8, 8.4
+    elif "S" in scale_size:
+        return 15.9, 6.7
+    else:
+        return 24.7, 10.8  # default to L
+
+def get_filled_bounds():
+    """Get the bounds of non-empty (non-zero) scales in the grid"""
+    if not grid or not grid[0]:
+        return 0, 0, 0, 0  # min_row, max_row, min_col, max_col
+    
+    min_row, max_row = None, None
+    min_col, max_col = None, None
+    
+    for r in range(len(grid)):
+        for c in range(len(grid[r])):
+            if grid[r][c] != 0:  # Non-empty scale
+                if min_row is None or r < min_row:
+                    min_row = r
+                if max_row is None or r > max_row:
+                    max_row = r
+                if min_col is None or c < min_col:
+                    min_col = c
+                if max_col is None or c > max_col:
+                    max_col = c
+    
+    # If no filled scales found, return zeros
+    if min_row is None:
+        return 0, 0, 0, 0
+    
+    return min_row, max_row, min_col, max_col
+
+def calculate_visual_width():
+    """Calculate the visual width accounting for alternating row offsets"""
+    if not grid or not grid[0]:
+        return 0.0
+    
+    min_row, max_row, min_col, max_col = get_filled_bounds()
+    if min_row == 0 and max_row == 0 and min_col == 0 and max_col == 0:
+        return 0.0
+    
+    # For each data column, check if it has scales in both offset positions (even and odd rows)
+    visual_width = 0.0
+    
+    for col in range(min_col, max_col + 1):
+        has_offset = False  # Has scales in offset rows (rows where scale is shifted right)
+        has_no_offset = False  # Has scales in non-offset rows (rows where scale is not shifted)
+        
+        for row in range(min_row, max_row + 1):
+            if row < len(grid) and col < len(grid[row]) and grid[row][col] != 0:
+                # Check if this row has offset based on base_row_parity
+                row_has_offset = ((row + base_row_parity) % 2) == 1
+                if row_has_offset:
+                    has_offset = True
+                else:
+                    has_no_offset = True
+        
+        # If this column has scales in both positions, it's a full column (1.0)
+        # If it only has scales in one position, it's a half column (0.5)
+        if has_offset and has_no_offset:
+            visual_width += 1.0
+        elif has_offset or has_no_offset:
+            visual_width += 0.5
+    
+    return visual_width
+
+def update_matrix_dimensions():
+    """Update the matrix dimensions label based on filled scales and scale size"""
+    try:
+        scale_w, scale_h = get_scale_dimensions()
+        
+        # Get bounds of filled scales
+        min_row, max_row, min_col, max_col = get_filled_bounds()
+        
+        # Calculate dimensions based on filled area
+        if min_row == 0 and max_row == 0 and min_col == 0 and max_col == 0:
+            # No filled scales
+            dpg.set_value("matrix_dimensions", " 0.0 x 0.0 mm")
+        else:
+            # Calculate visual width accounting for alternating offsets
+            visual_width = calculate_visual_width()
+            filled_height = max_row - min_row + 1
+            
+            # Calculate total matrix dimensions using overlapping scale dimensions
+            total_width = visual_width * scale_w
+            total_height = filled_height * scale_h
+            
+            dpg.set_value("matrix_dimensions", f" {total_width:.1f} x {total_height:.1f} mm")
+    except:
+        dpg.set_value("matrix_dimensions", " -- x -- mm")
+
+def update_scale_dimensions(sender, app_data):
+    """Callback for when scale size dropdown changes"""
+    update_matrix_dimensions()
 
 # ---- theming & UI ----
 with dpg.theme() as canvas_theme, dpg.theme_component():
@@ -858,7 +971,7 @@ with dpg.window() as window:
 
         with dpg.child_window(border=False):
             dpg.add_button(label="New Color", width=color_bar_width, callback=lambda: add_color_group(False))
-            color_selector = dpg.child_window(width=color_bar_width, height=250, label="Color Selector", tag="color_selector")
+            color_selector = dpg.child_window(width=color_bar_width, height=180, label="Color Selector", tag="color_selector")
             with color_selector:
                 def _selection(sender):
                     global selected_color, prev_selected_color
@@ -867,8 +980,13 @@ with dpg.window() as window:
                     for item in saved_color_texts: dpg.set_value(item, item == sender)
                 add_color_group(True)
                 add_color_group()
+            dpg.add_text("   Scale Size (WxH)")
+            dpg.add_combo(tag="scale_size_combo", width=color_bar_width, 
+                         items=["XL (30.5x48.3mm)", "L (22.2x35.8mm)", "M (17.8x27.9mm)", "S (14.3x22.2mm)", "XS (7.6x12.0mm)"], 
+                         default_value="L (22.2x35.8mm)", callback=update_scale_dimensions)
             dpg.add_text("    Width | Height")
             dpg.add_input_intx(tag="input_size", width=color_bar_width, default_value=[15, 20], size=2, min_value=1, min_clamped=True)
+            dpg.add_text(tag="matrix_dimensions", default_value=" 0.0 x 0.0 mm")
             dpg.add_button(label="Make Scale Grid", width=color_bar_width, callback=make_new_grid)
             dpg.add_text("")
             dpg.add_button(label="Export", width=color_bar_width, callback=lambda: generate_code(True))
@@ -898,6 +1016,9 @@ with dpg.window() as window:
             _sync_sym_btn_visual("y_toggle_btn", y_mirror_enabled)
             dpg.add_text("")
             dpg.add_button(label="Toggle Coords", width=color_bar_width, callback=_toggle_coords)
+
+# Initialize matrix dimensions on startup
+update_matrix_dimensions()
 
 dpg.set_primary_window(window, True)
 dpg.create_viewport(width=window_width, height=window_height, title="Boris's Scalemail Planner", small_icon=resource_path("icon_small.png"), large_icon=resource_path("icon_big.png"))
